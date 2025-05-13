@@ -1,10 +1,12 @@
 import express from 'express';
 import User from '../models/userSchema.js';
 import Employee from '../models/employeeSchema.js';
-import Payment from '../models/paymentSchema.js';
+import { Payment } from '../models/paymentSchema.js';
+// import Payment from '../models/paymentSchema.js';
 import Leave from '../models/leaveSchema.js';
 import Holiday from '../models/holidaySchema.js';
-import Attendance from '../models/attendanceSchema.js';
+import { Attendance } from '../models/paymentSchema.js';
+
 import crypto from "crypto"
 import { verifyToken } from '../middleware/verifyToken.js';
 

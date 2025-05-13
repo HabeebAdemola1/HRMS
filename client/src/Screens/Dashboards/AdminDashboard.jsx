@@ -1,5 +1,5 @@
 import  { useEffect, useState } from 'react';
-import { FaUser, FaComments, FaCog, FaBars, FaTimes, FaMoneyCheckAlt, FaUserTag, FaBuilding, FaDollarSign, } from 'react-icons/fa';
+import { FaUser, FaComments, FaCog, FaBars, FaTimes, FaMoneyCheckAlt, FaUserTag, FaBuilding, FaDollarSign, FaPaypal, FaAviato, FaPersonBooth, FaPeopleCarry, } from 'react-icons/fa';
 
 import DashboardContent from './DashboardContent';
 import { FaJoget } from 'react-icons/fa';
@@ -9,6 +9,10 @@ import Employees from '../others/Employees';
 import Settings from '../others/Settings';
 import Productivity from '../others/Productivity';
 import Department from '../others/Department';
+import SalaryPaymentDashboard from '../SalaryPaymentDashboard';
+import PaymentManagement from '../../components/payment/Payment';
+import AttendanceManagement from '../../components/payment/Attendance';
+import { WorkSchedule } from '../../../../backend/models/paymentSchema';
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -76,10 +80,18 @@ const AdminDashboard = () => {
         return < Settings/>;
       case 'productivity':
          return < Productivity/>;
-      case 'department':
+      case 'departments':
         return <Department />
       case 'job-Types':
         return <Department />
+      case 'attendance':
+        return <AttendanceManagement />
+      // case 'work':
+      //   return <WorkSchedule />
+      case 'make-payments':
+          return <PaymentManagement />
+      case 'salary':
+          return <SalaryPaymentDashboard />
 
       default:
         return <DashboardContent />;
@@ -156,23 +168,108 @@ const AdminDashboard = () => {
                 <div className="absolute left-0 w-1 h-8 bg-white top-1/2 transform -translate-y-1/2"></div>
               )}
             </li>
+
             <li
               className="group relative"
               onClick={() => {
-                setActiveTab('department');
+                setActiveTab('departments');
                 setIsSidebarOpen(false);
               }}
             >
               <div className="px-4 py-3 flex items-center justify-center cursor-pointer hover:bg-blue-700">
-                <FaBuilding className="text-xl" />
+                <FaPeopleCarry className="text-xl" />
               </div>
               <span className="absolute left-full ml-2 w-0 overflow-hidden group-hover:w-32 bg-blue-700 text-white px-2 py-1 rounded-r transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100">
                 Department
               </span>
-              {activeTab === 'department' && (
+              {activeTab === 'departments' && (
                 <div className="absolute left-0 w-1 h-8 bg-white top-1/2 transform -translate-y-1/2"></div>
               )}
             </li>
+
+            <li
+              className="group relative"
+              onClick={() => {
+                setActiveTab('make-payments');
+                setIsSidebarOpen(false);
+              }}
+            >
+            
+              <div className="px-4 py-3 flex items-center justify-center cursor-pointer hover:bg-blue-700">
+                <FaPaypal className="text-xl" />
+              </div>
+              <span className="absolute left-full ml-2 w-0 overflow-hidden group-hover:w-32 bg-blue-700 text-white px-2 py-1 rounded-r transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100">
+                Make-payments
+              </span>
+              {activeTab === 'make-payments' && (
+                <div className="absolute left-0 w-1 h-8 bg-white top-1/2 transform -translate-y-1/2"></div>
+              )}
+            </li>
+          
+       
+            <li
+              className="group relative"
+              onClick={() => {
+                setActiveTab('salary');
+                setIsSidebarOpen(false);
+              }}
+            >
+             
+              <div className="px-4 py-3 flex items-center justify-center cursor-pointer hover:bg-blue-700">
+                <FaMoneyCheckAlt className="text-xl" />
+              </div>
+              <span className="absolute left-full ml-2 w-0 overflow-hidden group-hover:w-32 bg-blue-700 text-white px-2 py-1 rounded-r transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100">
+                Salary
+              </span>
+              {activeTab === 'salary' && (
+                <div className="absolute left-0 w-1 h-8 bg-white top-1/2 transform -translate-y-1/2"></div>
+              )}
+            </li>
+
+
+            
+            <li
+              className="group relative"
+              onClick={() => {
+                setActiveTab('attendance');
+                setIsSidebarOpen(false);
+              }}
+            >
+             
+              <div className="px-4 py-3 flex items-center justify-center cursor-pointer hover:bg-blue-700">
+                <FaPersonBooth className="text-xl" />
+              </div>
+              <span className="absolute left-full ml-2 w-0 overflow-hidden group-hover:w-32 bg-blue-700 text-white px-2 py-1 rounded-r transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100">
+                Attendance
+              </span>
+              {activeTab === 'attendance' && (
+                <div className="absolute left-0 w-1 h-8 bg-white top-1/2 transform -translate-y-1/2"></div>
+              )}
+            </li>
+
+
+
+            
+            <li
+              className="group relative"
+              onClick={() => {
+                setActiveTab('work');
+                setIsSidebarOpen(false);
+              }}
+            >
+             
+              <div className="px-4 py-3 flex items-center justify-center cursor-pointer hover:bg-blue-700">
+                <FaMoneyCheckAlt className="text-xl" />
+              </div>
+              <span className="absolute left-full ml-2 w-0 overflow-hidden group-hover:w-32 bg-blue-700 text-white px-2 py-1 rounded-r transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100">
+                Work-Schedule
+              </span>
+              {activeTab === 'work' && (
+                <div className="absolute left-0 w-1 h-8 bg-white top-1/2 transform -translate-y-1/2"></div>
+              )}
+            </li>
+
+
 
             <li
               className="group relative"
@@ -218,9 +315,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-            EXPORT
-          </button>
+      
         </header>
 
         {/* Main Content Area */}

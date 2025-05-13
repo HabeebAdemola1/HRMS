@@ -11,6 +11,7 @@ const EmployeeSchema = new mongoose.Schema({
   department: { type: String, required: true },
   jobType: { type: String, required: true },
   salary: { type: String, required: true },
+  payments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Payment' }],
   picture: { type: String },
   AcctNo:{type:String, },
   Bank:{type:String, },

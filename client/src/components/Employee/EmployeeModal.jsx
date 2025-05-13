@@ -224,6 +224,7 @@ const EmployeeModal = ({ show, onClose, formData, setFormData, isEdit, selectedE
                   onChange={handleInputChange}
                   className="mt-1 p-2 w-full border rounded focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
+                      {!formData.address && <p className="text-red-500 text-sm mt-1 animate-fadeIn">address is required</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Gender</label>

@@ -6,7 +6,7 @@ import router from "./routes/userRoute.js";
 import superAdminrouter from "./routes/superAdminRoute.js";
 import employeeRouter from "./routes/employeeRoute.js";
 import morgan from "morgan";
-
+import paymentRouter from "./routes/payment&salaryRoute.js"
 dotenv.config();
 
 // Connect to the database
@@ -37,6 +37,7 @@ app.use(cors({
 app.use("/api/auth", router);
 app.use("/api/admin", superAdminrouter);
 app.use("/api/employees", employeeRouter);
+app.use("/api", paymentRouter)
 
 // Default route
 app.get("/", (req, res) => {
