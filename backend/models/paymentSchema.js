@@ -75,6 +75,10 @@ const PaymentSchema = new mongoose.Schema({
     percentage: { type: Number, default: 0 },
     amount: { type: Number, default: 0 }
   },
+  totalDeductions: {
+    type:Number,
+    default: 0
+  },
   netSalary: { type: Number },
   dailySalary: { type: Number },
   monthlySalary: { type: Number },

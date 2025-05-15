@@ -14,6 +14,7 @@ const PaymentManagement = () => {
   const [employees, setEmployees] = useState([]);
   const [daysPresent, setDaysPresent] = useState(0);
   const [daysAbsent, setDaysAbsent] = useState(0);
+
   const [lateDays, setLateDays] = useState(0);
   const [form, setForm] = useState({
     employeeId: '',
@@ -113,7 +114,7 @@ const PaymentManagement = () => {
 
   const calculateSalariesAndDeductions = () => {
     const grossSalary = parseFloat(form.grossSalary) || 0;
-    const totalWorkingDays = form.isFullMonth ? 22 : 15; // Adjust for partial months
+    const totalWorkingDays = form.isFullMonth ? 22 : 15; 
     const dailySalary = grossSalary / totalWorkingDays;
     const monthlySalary = grossSalary;
     const yearlySalary = grossSalary * 12;
@@ -225,7 +226,10 @@ const PaymentManagement = () => {
     setLateDays(payment.lateDays || 0);
     setEditingId(payment._id);
     setError('');
+
+
   };
+
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this payment record?')) return;
@@ -240,6 +244,16 @@ const PaymentManagement = () => {
       setLoading(false);
     }
   };
+
+
+  const formatNumber = (value) => {
+    if (value === '' || value == null || isNaN(value)) return '';
+    return parseFloat(value).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+  
 
   return (
     <div className="p-4 sm:p-6 bg-gray-100 min-h-screen">
@@ -449,6 +463,10 @@ const PaymentManagement = () => {
                 <th className="p-2">Days Absent</th>
                 <th className="p-2">Late Days</th>
                 <th className="p-2">Gross Salary</th>
+                <th className="p-2">Tax</th>
+                <th className="p-2">IOU</th>
+                <th className="p-2">Penalty</th>
+                <th className="p-2">other deductions</th>
                 <th className="p-2">Total Deductions</th>
                 <th className="p-2">Net Salary</th>
                 <th className="p-2">Daily Salary</th>
@@ -468,12 +486,16 @@ const PaymentManagement = () => {
                   <td className="p-2">{pay.daysPresent || 0}</td>
                   <td className="p-2">{pay.daysAbsent || 0}</td>
                   <td className="p-2">{pay.lateDays || 0}</td>
-                  <td className="p-2">N{pay.grossSalary.toFixed(2)}</td>
-                  <td className="p-2">N{pay.totalDeductions?.toFixed(2)}</td>
-                  <td className="p-2">N{pay.netSalary.toFixed(2)}</td>
-                  <td className="p-2">N{pay.dailySalary?.toFixed(2)}</td>
-                  <td className="p-2">N{pay.monthlySalary?.toFixed(2)}</td>
-                  <td className="p-2">N{pay.yearlySalary?.toFixed(2)}</td>
+                  <td className="p-2">N{formatNumber(pay.grossSalary.toFixed(2))}</td>
+                  <td className="p-2">N{formatNumber(pay?.tax.amount.toFixed(2))}</td>
+                  <td className="p-2">N{formatNumber(pay?.IOU.amount.toFixed(2))}</td>
+                  <td className="p-2">N{formatNumber(pay?.penalty.amount.toFixed(2))}</td>
+                  <td className="p-2">N{formatNumber(pay?.otherDeduction.amount.toFixed(2))}</td>
+                  <td className="p-2">N{formatNumber(pay?.totalDeductions?.toFixed(2))}</td>
+                  <td className="p-2">N{formatNumber(pay.netSalary.toFixed(2))}</td>
+                  <td className="p-2">N{formatNumber(pay.dailySalary?.toFixed(2))}</td>
+                  <td className="p-2">N{formatNumber(pay.monthlySalary?.toFixed(2))}</td>
+                  <td className="p-2">N{formatNumber(pay.yearlySalary?.toFixed(2))}</td>
                   <td className="p-2">{moment(pay.paymentDate).format('YYYY-MM-DD')}</td>
                   <td className="p-2">{pay.status}</td>
                   <td className="p-2 sm:table-cell hidden">

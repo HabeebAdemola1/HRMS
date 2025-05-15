@@ -102,6 +102,42 @@ router.get('/attendance/:id', verifyToken, async (req, res) => {
 router.post('/payment', verifyToken, async (req, res) => {
   try {
     const { employeeId, grossSalary, paymentDate, payrollPeriod, isFullMonth, tax, IOU, penalty, otherDeduction } = req.body;
+
+
+    const deductions = [
+      { name: 'tax', value: tax },
+      { name: 'IOU', value: IOU },
+      { name: 'penalty', value: penalty },
+      { name: 'otherDeduction', value: otherDeduction },
+    ];
+    for (const deduction of deductions) {
+      if (!deduction.value || !['percentage', 'amount'].includes(deduction.value.mode)) {
+        return res.status(400).json({
+          status: false,
+          message: `Valid ${deduction.name} object with mode (percentage or amount) is required`,
+        });
+      }
+      if (isNaN(deduction.value.percentage) || isNaN(deduction.value.amount)) {
+        return res.status(400).json({
+          status: false,
+          message: `${deduction.name} percentage and amount must be numbers`,
+        });
+      }
+    }
+
+        // Calculate totalDeductions
+        const calculateDeduction = (deduction, grossSalary) => {
+          const { mode, percentage, amount } = deduction;
+          return mode === 'percentage' ? (grossSalary * percentage) / 100 : amount;
+        };
+
+
+    const totalDeductions =
+    calculateDeduction(tax || { percentage: 0, amount: 0, mode: 'percentage' }, grossSalary) +
+    calculateDeduction(IOU || { percentage: 0, amount: 0, mode: 'percentage' }, grossSalary) +
+    calculateDeduction(penalty || { percentage: 0, amount: 0, mode: 'percentage' }, grossSalary) +
+    calculateDeduction(otherDeduction || { percentage: 0, amount: 0, mode: 'percentage' }, grossSalary) 
+
     
     const payment = new Payment({
       adminId: req.user.id,
@@ -114,6 +150,7 @@ router.post('/payment', verifyToken, async (req, res) => {
       IOU: IOU || { percentage: 0, amount: 0 },
       penalty: penalty || { percentage: 0, amount: 0 },
       otherDeduction: otherDeduction || { percentage: 0, amount: 0 },
+      totalDeductions
     });
 
     await payment.save();
@@ -238,3 +275,12 @@ router.get('/work-schedule', verifyToken, async (req, res) => {
 });
 
 export default router;
+
+
+
+
+
+
+
+
+

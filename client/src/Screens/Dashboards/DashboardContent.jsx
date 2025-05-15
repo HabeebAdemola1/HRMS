@@ -33,9 +33,9 @@ const DashboardContent = () => {
         });
         setEmployees(response.data);
         setFilteredEmployees(response.data);
-        toast.success(response.data.message || "Successful", {
-          style: { background: "#4CAF50", color: "white", fontSize: "bold" },
-        });
+        // toast.success(response.data.message || "Successful", {
+        //   style: { background: "#4CAF50", color: "white", fontSize: "bold" },
+        // });
       } catch (error) {
         console.error('Error fetching employees:', error);
         toast.error(error.message || "Failed", {

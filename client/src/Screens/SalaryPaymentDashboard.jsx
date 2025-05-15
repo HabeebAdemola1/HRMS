@@ -158,6 +158,7 @@ const SalaryPaymentDashboard = () => {
     [stats]
   );
 
+
   // Chart Options
   const chartOptions = {
     responsive: true,
@@ -178,6 +179,15 @@ const SalaryPaymentDashboard = () => {
       },
     },
   };
+
+  const formatNumber = (value) => {
+    if (value === '' || value == null || isNaN(value)) return '';
+    return parseFloat(value).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+  
 
   return (
     <div className="p-4 sm:p-6 bg-gray-100 min-h-screen">
@@ -226,12 +236,12 @@ const SalaryPaymentDashboard = () => {
             <div className="bg-white p-4 rounded-lg shadow-md">
               <h2 className="text-lg sm:text dedica-xl font-semibold mb-4">Financial Summary</h2>
               <p className="text-sm sm:text-base">
-                Total Paid: N{stats.totalPaid.toFixed(2)}
+                Total Paid: N{formatNumber(stats.totalPaid.toFixed(2))}
               </p>
-              <p className="text-sm sm:text-base">Total Tax: N{stats.totalTax.toFixed(2)}</p>
-              <p className="text-sm sm:text-base">Total IOU: N{stats.totalIOU.toFixed(2)}</p>
+              <p className="text-sm sm:text-base">Total Tax: N{formatNumber(stats.totalTax.toFixed(2))}</p>
+              <p className="text-sm sm:text-base">Total IOU: N{formatNumber(stats.totalIOU.toFixed(2))}</p>
               <p className="text-sm sm:text-base">
-                Total Penalty: N{stats.totalPenalty.toFixed(2)}
+                Total Penalty: N{formatNumber(stats.totalPenalty.toFixed(2))}
               </p>
               <p className="text-sm sm:text-base">
                 Other Deductions: N{stats.totalOtherDeduction.toFixed(2)}
