@@ -20,7 +20,7 @@ const EmployeeSchema = new mongoose.Schema({
   gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
   complaints:{type:String, enum: ["suspended", "sacked", "dismissed", "serviceNoLongerRequired","pay-slip", "employment","query","promotion", "none"], default:"none" },
   uniqueNumber: { type: String, unique: true },
-  dashboardAccess: { type: Boolean, default: true },
+  dashboardAccess: { type: Boolean, default: false },
   workHours: { type: Number },
   tasks: [{ description: String, deadline: Date, status: { type: String, default: 'Pending' } }],
   createdAt: { type: Date, default: Date.now },

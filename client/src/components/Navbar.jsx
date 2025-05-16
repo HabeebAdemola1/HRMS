@@ -38,6 +38,12 @@ const Navbar = () => {
                 </button>
               ): (
                 <>
+                       <Link
+                to="/stafflogin"
+                className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Login as a staff
+              </Link>
                      <Link
                 to="/login"
                 className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium"

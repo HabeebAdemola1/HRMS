@@ -127,19 +127,55 @@ router.delete('/:id', verifyToken, async (req, res) => {
   }
 });
 // Toggle Dashboard Access
-router.patch('/:id/toggle-dashboard', verifyToken, async (req, res) => {
+router.patch('/toggle-dashboard', verifyToken, async (req, res) => {
+  const userId = req.user.id
   try {
-    const employee = await Employee.findById(req.params.id);
-    if (!employee) return res.status(404).json({ error: 'Employee not found' });
-    if (employee.adminId.toString() !== req.user.id) return res.status(403).json({ error: 'Access denied' });
+    const user = await User.findOne({_id: userId})
+    if(!user){
+      return res.status(404).json({
+        message: "user not found",
+        status: "false"
+      })
+    }
+    const employeeAdmin = await Employee.findOne({adminId: user._id})
+    if(!employeeAdmin){
+      return res.status(400).json({
+        message: "admin details is not found in employee table",
+        status: false
+      })
+    }
 
-    employee.dashboardAccess = !employee.dashboardAccess;
-    await employee.save();
-    res.status(200).json(employee);
+
+    if( employeeAdmin.dashboardAccess){
+      return res.status(400).json({
+        message: "dashboard access is  already enabled"
+      })
+    }
+
+    employeeAdmin.dashboardAccess = true
+
+    await employeeAdmin.save()
+    
+    return res.status(200).json({
+      message: 'Dashboard access enabled successfully',
+      status: true,
+    })
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
 
 // Set Work Hours and Tasks
 router.patch('/:id/work', verifyToken, async (req, res) => {
@@ -269,127 +305,6 @@ router.post('/:id/attendance', verifyToken, async (req, res) => {
   }
 });
 
-// Generate Complaint Letter
-// router.get('/:id/complaint-letter', verifyToken, async (req, res) => {
-//   try {
-//     const employee = await Employee.findById(req.params.id);
-//     if (!employee) return res.status(404).json({ error: 'Employee not found' });
-//     if (employee.adminId.toString() !== req.user.id) return res.status(403).json({ error: 'Access denied' });
-
-//     const complaintType = employee.complaints;
-//     if (complaintType === 'none of the above') return res.status(400).json({ error: 'No complaint to generate letter for' });
-
-//     const date = new Date().toLocaleDateString();
-//     let letter = '';
-
-//     switch (complaintType) {
-//       case 'sacked':
-//         letter = `
-//           [Company Letterhead]
-//           Date: ${date}
-
-//           To: ${employee.name}
-//           Address: ${employee.address}
-
-//           Subject: Termination of Employment - Sacked
-
-//           Dear ${employee.name},
-
-//           We regret to inform you that your employment with ${employee?.adminId?.name} has been terminated effective immediately due to [specific reason, e.g., repeated misconduct]. This decision was made after careful consideration and in accordance with company policies.
-
-//           Please return all company property in your possession by [date]. Your final paycheck, including any outstanding benefits, will be processed and sent to you by [date].
-
-//           Should you have any questions, please contact the HR department at [HR contact info].
-
-//           Sincerely,
-//           [Admin Name]
-//           HR Manager
-//           [Company Name]
-//         `;
-//         break;
-//         case 'promotion':
-//           letter=``
-//         case 'pay-slip':
-//           letter= ``
-//         case 'employment':
-//           letter = ``
-//         case 'dismissed':
-//         letter = `
-//           [Company Letterhead]
-//           Date: ${date}
-
-//           To: ${employee.name}
-//           Address: ${employee.address}
-
-//           Subject: Dismissal Notice
-
-//           Dear ${employee.name},
-
-//           This letter serves as formal notice of your dismissal from  ${employee?.adminId?.name}, effective [date]. The reason for your dismissal is [specific reason, e.g., violation of company policy]. This action has been taken after a thorough review of the circumstances.
-
-//           Please ensure all company property is returned by [date]. Your final payment will be processed by [date].
-
-//           For further inquiries, contact HR at [HR contact info].
-
-//           Sincerely,
-//           [Admin Name]
-//           HR Manager
-//           [Company Name]
-//         `;
-//         break;
-//       case 'leave':
-//         letter = `
-//           [Company Letterhead]
-//           Date: ${date}
-
-//           To: ${employee.name}
-//           Address: ${employee.address}
-
-//           Subject: Leave Approval/Rejection Notice
-
-//           Dear ${employee.name},
-
-//           We have reviewed your leave request submitted on [submission date]. We are pleased to inform you that your leave from [start date] to [end date] has been [approved/rejected]. [If rejected, include reason, e.g., insufficient notice period].
-
-//           Please ensure all pending tasks are delegated before your leave begins. For any questions, contact HR at [HR contact info].
-
-//           Sincerely,
-//           [Admin Name]
-//           HR Manager
-//           [Company Name]
-//         `;
-//         break;
-//       case 'suspended':
-//         letter = `
-//           [Company Letterhead]
-//           Date: ${date}
-
-//           To: ${employee.name}
-//           Address: ${employee.address}
-
-//           Subject: Suspension Notice
-
-//           Dear ${employee.name},
-
-//           This letter is to inform you that you have been suspended from your position at [Company Name] effective [start date] for a period of [duration, e.g., 2 weeks]. This action is due to [specific reason, e.g., pending investigation into misconduct].
-
-//           During this period, you are not permitted to access company premises or systems. A final decision will be communicated to you by [end date]. For inquiries, contact HR at [HR contact info].
-
-//           Sincerely,
-//           [Admin Name]
-//           HR Manager
-//           [Company Name]
-//         `;
-//         break;
-//       default:
-//         return res.status(400).json({ error: 'Invalid complaint type' });
-//     }
-//     console.log(employee.adminId)
-//     res.status(200).json({ letter });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
 
 
 

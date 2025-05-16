@@ -10,6 +10,8 @@ import Navbar from "./components/Navbar";
 import EmailVerify from "./Screens/auth/VerifyEmail";
 import SuperAdminSignup from "./Screens/auth/SuperAdminSignup";
 import SuperAdminDashboard from "./Screens/superAdmin/SuperAdminDashboard";
+import LoginStaff from "./Screens/auth/LoginStaff";
+import StaffDashboard from "./Screens/Dashboards/StaffDashboard";
 
 const App = () => {
   return (
@@ -36,6 +38,8 @@ const App = () => {
           <Route path="/verifyemail" element={<EmailVerify />} />
           <Route path="/superadminsingup" element={<SuperAdminSignup />} />
           <Route path="/superadmindashboard" element={<SuperAdminDashboard /> } />
+          <Route path="/stafflogin" element={<LoginStaff />} />
+          <Route path="/staffdashboard" element={<StaffDashboard />} />
 
          
         
