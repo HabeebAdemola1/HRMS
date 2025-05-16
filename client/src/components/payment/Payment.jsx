@@ -19,7 +19,7 @@ const PaymentManagement = () => {
   const [form, setForm] = useState({
     employeeId: '',
     grossSalary: '',
-    paymentDate: '',
+    paymentDate:  moment().format('YYYY-MM-DD'),
     payrollPeriod: '',
     isFullMonth: true,
     useAttendanceForSalary: false,

@@ -1,15 +1,20 @@
 import express from 'express';
 import User from '../models/userSchema.js';
+import Admin from '../models/userSchema.js';
 import Employee from '../models/employeeSchema.js';
 import { Payment } from '../models/paymentSchema.js';
 // import Payment from '../models/paymentSchema.js';
 import Leave from '../models/leaveSchema.js';
 import Holiday from '../models/holidaySchema.js';
 import { Attendance } from '../models/paymentSchema.js';
+import nodemailer from "nodemailer";
 
 import crypto from "crypto"
 import { verifyToken } from '../middleware/verifyToken.js';
 
+import dotenv from "dotenv"
+
+dotenv.config()
 
 const router = express.Router();
 
@@ -18,27 +23,27 @@ router.post('/', verifyToken, async (req, res) => {
   const userId = req.user.id
   const {
     name, phone, jobRole, email, qualification, designation, department, jobType, salary,
-    address, gender, 
+    address, gender,
   } = req.body;
   try {
-    const user = await User.findOne({_id: req.user.id})
-    if(!user){
+    const user = await User.findOne({ _id: req.user.id })
+    if (!user) {
       return res.status(401).json({
         message: "not found",
         status: false
       })
     }
 
-       const uniqueNumber = `RL-${crypto
-            .randomBytes(3)
-            .toString("hex")
-            .toUpperCase()}`;
+    const uniqueNumber = `RL-${crypto
+      .randomBytes(3)
+      .toString("hex")
+      .toUpperCase()}`;
 
-    const emailExist = await Employee.findOne({email})
-    if(emailExist)return res.status(400).json({message: "email already exist in the employee list"})
+    const emailExist = await Employee.findOne({ email })
+    if (emailExist) return res.status(400).json({ message: "email already exist in the employee list" })
     const employee = new Employee({
       adminId: req.user.id, name, phone, jobRole, email, qualification, designation,
-      department, jobType, salary,  address, gender, uniqueNumber
+      department, jobType, salary, address, gender, uniqueNumber
     });
     await employee.save();
     res.status(201).json(employee);
@@ -49,13 +54,13 @@ router.post('/', verifyToken, async (req, res) => {
 });
 
 
-router.get("/", verifyToken, async(req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   const userId = req.user.id
 
   try {
-    const user = await Employee.find({adminId: userId})
-    if(!user){
-      return res.status(404).json({status: false, message: "not found"})
+    const user = await Employee.find({ adminId: userId })
+    if (!user) {
+      return res.status(404).json({ status: false, message: "not found" })
     }
 
 
@@ -105,7 +110,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-   
+
     const employee = await Employee.findOne({ _id: id, adminId: userId });
 
     if (!employee) {
@@ -226,7 +231,7 @@ router.patch('/:id/leave/:leaveId', verifyToken, async (req, res) => {
 });
 
 // Add Holiday
-router.post('/holiday',verifyToken, async (req, res) => {
+router.post('/holiday', verifyToken, async (req, res) => {
   const { name, description, date } = req.body;
   try {
     const holiday = new Holiday({ name, description, date });
@@ -238,7 +243,7 @@ router.post('/holiday',verifyToken, async (req, res) => {
 });
 
 // Record Attendance
-router.post('/:id/attendance',verifyToken, async (req, res) => {
+router.post('/:id/attendance', verifyToken, async (req, res) => {
   const { date, status, hoursWorked } = req.body;
   try {
     const employee = await Employee.findById(req.params.id);
@@ -265,14 +270,162 @@ router.post('/:id/attendance',verifyToken, async (req, res) => {
 });
 
 // Generate Complaint Letter
+// router.get('/:id/complaint-letter', verifyToken, async (req, res) => {
+//   try {
+//     const employee = await Employee.findById(req.params.id);
+//     if (!employee) return res.status(404).json({ error: 'Employee not found' });
+//     if (employee.adminId.toString() !== req.user.id) return res.status(403).json({ error: 'Access denied' });
+
+//     const complaintType = employee.complaints;
+//     if (complaintType === 'none of the above') return res.status(400).json({ error: 'No complaint to generate letter for' });
+
+//     const date = new Date().toLocaleDateString();
+//     let letter = '';
+
+//     switch (complaintType) {
+//       case 'sacked':
+//         letter = `
+//           [Company Letterhead]
+//           Date: ${date}
+
+//           To: ${employee.name}
+//           Address: ${employee.address}
+
+//           Subject: Termination of Employment - Sacked
+
+//           Dear ${employee.name},
+
+//           We regret to inform you that your employment with ${employee?.adminId?.name} has been terminated effective immediately due to [specific reason, e.g., repeated misconduct]. This decision was made after careful consideration and in accordance with company policies.
+
+//           Please return all company property in your possession by [date]. Your final paycheck, including any outstanding benefits, will be processed and sent to you by [date].
+
+//           Should you have any questions, please contact the HR department at [HR contact info].
+
+//           Sincerely,
+//           [Admin Name]
+//           HR Manager
+//           [Company Name]
+//         `;
+//         break;
+//         case 'promotion':
+//           letter=``
+//         case 'pay-slip':
+//           letter= ``
+//         case 'employment':
+//           letter = ``
+//         case 'dismissed':
+//         letter = `
+//           [Company Letterhead]
+//           Date: ${date}
+
+//           To: ${employee.name}
+//           Address: ${employee.address}
+
+//           Subject: Dismissal Notice
+
+//           Dear ${employee.name},
+
+//           This letter serves as formal notice of your dismissal from  ${employee?.adminId?.name}, effective [date]. The reason for your dismissal is [specific reason, e.g., violation of company policy]. This action has been taken after a thorough review of the circumstances.
+
+//           Please ensure all company property is returned by [date]. Your final payment will be processed by [date].
+
+//           For further inquiries, contact HR at [HR contact info].
+
+//           Sincerely,
+//           [Admin Name]
+//           HR Manager
+//           [Company Name]
+//         `;
+//         break;
+//       case 'leave':
+//         letter = `
+//           [Company Letterhead]
+//           Date: ${date}
+
+//           To: ${employee.name}
+//           Address: ${employee.address}
+
+//           Subject: Leave Approval/Rejection Notice
+
+//           Dear ${employee.name},
+
+//           We have reviewed your leave request submitted on [submission date]. We are pleased to inform you that your leave from [start date] to [end date] has been [approved/rejected]. [If rejected, include reason, e.g., insufficient notice period].
+
+//           Please ensure all pending tasks are delegated before your leave begins. For any questions, contact HR at [HR contact info].
+
+//           Sincerely,
+//           [Admin Name]
+//           HR Manager
+//           [Company Name]
+//         `;
+//         break;
+//       case 'suspended':
+//         letter = `
+//           [Company Letterhead]
+//           Date: ${date}
+
+//           To: ${employee.name}
+//           Address: ${employee.address}
+
+//           Subject: Suspension Notice
+
+//           Dear ${employee.name},
+
+//           This letter is to inform you that you have been suspended from your position at [Company Name] effective [start date] for a period of [duration, e.g., 2 weeks]. This action is due to [specific reason, e.g., pending investigation into misconduct].
+
+//           During this period, you are not permitted to access company premises or systems. A final decision will be communicated to you by [end date]. For inquiries, contact HR at [HR contact info].
+
+//           Sincerely,
+//           [Admin Name]
+//           HR Manager
+//           [Company Name]
+//         `;
+//         break;
+//       default:
+//         return res.status(400).json({ error: 'Invalid complaint type' });
+//     }
+//     console.log(employee.adminId)
+//     res.status(200).json({ letter });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+
+
 router.get('/:id/complaint-letter', verifyToken, async (req, res) => {
   try {
     const employee = await Employee.findById(req.params.id);
     if (!employee) return res.status(404).json({ error: 'Employee not found' });
     if (employee.adminId.toString() !== req.user.id) return res.status(403).json({ error: 'Access denied' });
 
-    const complaintType = employee.complaints;
-    if (complaintType === 'none') return res.status(400).json({ error: 'No complaint to generate letter for' });
+    const admin = await Admin.findById(employee.adminId);
+    if (!admin) return res.status(404).json({ error: 'Admin not found' });
+
+
+    const validComplaints = [
+      "pay-slip",
+      "employment",
+      "query",
+      "promotion"
+    ]
+
+
+    let complaintType;
+
+    
+    const frontendComplaint = req.body?.complaintType || req.query?.complaintType || null;
+
+    if(employee.complaints && validComplaints.includes(employee.complaints)){
+      complaintType = employee.complaints
+    } else if(frontendComplaint && validComplaints.includes(frontendComplaint)){
+      complaintType = frontendComplaint
+    } else {
+      return res.status(400).json({ error: 'Invalid complaint type. Please select a valid complaint.' });
+    }
+
+
+    if (complaintType === 'none of the above') return res.status(400).json({ error: 'No complaint to generate letter for' });
 
     const date = new Date().toLocaleDateString();
     let letter = '';
@@ -280,94 +433,184 @@ router.get('/:id/complaint-letter', verifyToken, async (req, res) => {
     switch (complaintType) {
       case 'sacked':
         letter = `
-          [Company Letterhead]
-          Date: ${date}
+[Company Letterhead]
+Date: ${date}
 
-          To: ${employee.name}
-          Address: ${employee.address}
+To: ${employee.name}
+Address: ${employee.address}
 
-          Subject: Termination of Employment - Sacked
+Subject: Termination of Employment - Sacked
 
-          Dear ${employee.name},
+Dear ${employee.name},
 
-          We regret to inform you that your employment with [Company Name] has been terminated effective immediately due to [specific reason, e.g., repeated misconduct]. This decision was made after careful consideration and in accordance with company policies.
+We regret to inform you that your employment with ${admin.name} has been terminated effective immediately due to [specific reason, e.g., repeated misconduct]. This decision was made after careful consideration and in accordance with company policies.
 
-          Please return all company property in your possession by [date]. Your final paycheck, including any outstanding benefits, will be processed and sent to you by [date].
+Please return all company property in your possession by [date]. Your final paycheck, including any outstanding benefits, will be processed and sent to you by [date].
 
-          Should you have any questions, please contact the HR department at [HR contact info].
+Should you have any questions, please contact the HR department at [HR contact info].
 
-          Sincerely,
-          [Admin Name]
-          HR Manager
-          [Company Name]
+Sincerely,
+${admin.name}
+HR Manager
+${admin.name}
+        `;
+        break;
+      case 'promotion':
+        letter = `
+[Company Letterhead]
+Date: ${date}
+
+To: ${employee.name}
+Address: ${employee.address}
+
+Subject: Promotion Announcement
+
+Dear ${employee.name},
+
+We are pleased to inform you that you have been promoted to [new position, e.g., Senior Developer] at ${admin.name}, effective [start date]. This promotion is in recognition of your outstanding performance and contributions to the company.
+
+Your new role will include [brief description of new responsibilities]. Your updated compensation package will be detailed in a separate document sent by [date].
+
+Please contact HR at [HR contact info] for any questions or to discuss the transition.
+
+Sincerely,
+${admin.name}
+HR Manager
+${admin.name}
+        `;
+        break;
+      case 'pay-slip':
+        letter = `
+[Company Letterhead]
+Date: ${date}
+
+To: ${employee.name}
+Address: ${employee.address}
+
+Subject: Payslip Discrepancy Notice
+
+Dear ${employee.name},
+
+We have received your query regarding a discrepancy in your payslip for [month/year]. After review, [explain resolution, e.g., an error in overtime calculation has been identified and corrected]. A corrected payslip will be issued by [date].
+
+Please review the updated payslip and contact HR at [HR contact info] if you have further concerns.
+
+Sincerely,
+${admin.name}
+HR Manager
+${admin.name}
+        `;
+        break;
+      case 'employment':
+        letter = `
+[Company Letterhead]
+Date: ${date}
+
+To: ${employee.name}
+Address: ${employee.address}
+
+Subject: Employment Confirmation
+
+Dear ${employee.name},
+
+We are delighted to confirm your employment with ${admin.name} as [position, e.g., Software Engineer], effective [start date]. Your role will involve [brief description of duties].
+
+Your compensation package and employment terms are outlined in the attached contract. Please sign and return the contract by [date]. For any questions, contact HR at [HR contact info].
+
+Sincerely,
+${admin.name}
+HR Manager
+${admin.name}
+        `;
+        break;
+      case 'query':
+        letter = `
+[Company Letterhead]
+Date: ${date}
+
+To: ${employee.name}
+Address: ${employee.address}
+
+Subject: Response to Employee Query
+
+Dear ${employee.name},
+
+We have received your query submitted on [submission date] regarding [query topic, e.g., workplace policy]. After review, [explain resolution, e.g., the policy has been clarified as follows: ...].
+
+Please contact HR at [HR contact info] if you have additional questions or require further clarification.
+
+Sincerely,
+${admin.name}
+HR Manager
+${admin.name}
         `;
         break;
       case 'dismissed':
         letter = `
-          [Company Letterhead]
-          Date: ${date}
+[Company Letterhead]
+Date: ${date}
 
-          To: ${employee.name}
-          Address: ${employee.address}
+To: ${employee.name}
+Address: ${employee.address}
 
-          Subject: Dismissal Notice
+Subject: Dismissal Notice
 
-          Dear ${employee.name},
+Dear ${employee.name},
 
-          This letter serves as formal notice of your dismissal from [Company Name], effective [date]. The reason for your dismissal is [specific reason, e.g., violation of company policy]. This action has been taken after a thorough review of the circumstances.
+This letter serves as formal notice of your dismissal from ${admin.name}, effective [date]. The reason for your dismissal is [specific reason, e.g., violation of company policy]. This action has been taken after a thorough review of the circumstances.
 
-          Please ensure all company property is returned by [date]. Your final payment will be processed by [date].
+Please ensure all company property is returned by [date]. Your final payment will be processed by [date].
 
-          For further inquiries, contact HR at [HR contact info].
+For further inquiries, contact HR at [HR contact info].
 
-          Sincerely,
-          [Admin Name]
-          HR Manager
-          [Company Name]
+Sincerely,
+${admin.name}
+HR Manager
+${admin.name}
         `;
         break;
       case 'leave':
         letter = `
-          [Company Letterhead]
-          Date: ${date}
+[Company Letterhead]
+Date: ${date}
 
-          To: ${employee.name}
-          Address: ${employee.address}
+To: ${employee.name}
+Address: ${employee.address}
 
-          Subject: Leave Approval/Rejection Notice
+Subject: Leave Approval/Rejection Notice
 
-          Dear ${employee.name},
+Dear ${employee.name},
 
-          We have reviewed your leave request submitted on [submission date]. We are pleased to inform you that your leave from [start date] to [end date] has been [approved/rejected]. [If rejected, include reason, e.g., insufficient notice period].
+We have reviewed your leave request submitted on [submission date]. We are pleased to inform you that your leave from [start date] to [end date] has been [approved/rejected]. [If rejected, include reason, e.g., insufficient notice period].
 
-          Please ensure all pending tasks are delegated before your leave begins. For any questions, contact HR at [HR contact info].
+Please ensure all pending tasks are delegated before your leave begins. For any questions, contact HR at [HR contact info].
 
-          Sincerely,
-          [Admin Name]
-          HR Manager
-          [Company Name]
+Sincerely,
+${admin.name}
+HR Manager
+${admin.name}
         `;
         break;
       case 'suspended':
         letter = `
-          [Company Letterhead]
-          Date: ${date}
+[Company Letterhead]
+Date: ${date}
 
-          To: ${employee.name}
-          Address: ${employee.address}
+To: ${employee.name}
+Address: ${employee.address}
 
-          Subject: Suspension Notice
+Subject: Suspension Notice
 
-          Dear ${employee.name},
+Dear ${employee.name},
 
-          This letter is to inform you that you have been suspended from your position at [Company Name] effective [start date] for a period of [duration, e.g., 2 weeks]. This action is due to [specific reason, e.g., pending investigation into misconduct].
+This letter is to inform you that you have been suspended from your position at ${admin.name} effective [start date] for a period of [duration, e.g., 2 weeks]. This action is due to [specific reason, e.g., pending investigation into misconduct].
 
-          During this period, you are not permitted to access company premises or systems. A final decision will be communicated to you by [end date]. For inquiries, contact HR at [HR contact info].
+During this period, you are not permitted to access company premises or systems. A final decision will be communicated to you by [end date]. For inquiries, contact HR at [HR contact info].
 
-          Sincerely,
-          [Admin Name]
-          HR Manager
-          [Company Name]
+Sincerely,
+${admin.name}
+HR Manager
+${admin.name}
         `;
         break;
       default:
@@ -376,7 +619,49 @@ router.get('/:id/complaint-letter', verifyToken, async (req, res) => {
 
     res.status(200).json({ letter });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+
+
+
+router.post('/:id/send-letter', async (req, res) => {
+  const { id } = req.params;
+  const { letter, complaintType } = req.body;
+
+  try {
+
+    const employee = await Employee.findById(id);
+    if (!employee) {
+      console.log('employee not found')
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    // Configure email transport (e.g., Gmail SMTP)
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Send email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: employee.email,
+      subject: `Complaint Letter: ${complaintType}`,
+      text: letter,
+    });
+
+    res.json({ message: 'Letter sent successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to send letter' });
   }
 });
 
@@ -404,3 +689,10 @@ router.get('/:id/attendance-report', verifyToken, async (req, res) => {
 });
 
 export default router;
+
+
+
+
+
+
+

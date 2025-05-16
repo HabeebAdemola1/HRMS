@@ -11,7 +11,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import PaymentManagement from "../components/payment/Payment";
+
 
 // Register Chart.js components
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -174,7 +174,7 @@ const SalaryPaymentDashboard = () => {
       tooltip: {
         enabled: true,
         callbacks: {
-          label: (context) => `${context.label}: ${context.parsed.toFixed(2)}`,
+          label: (context) => `${context.label}: ${context?.parsed?.toFixed(2)}`,
         },
       },
     },
@@ -261,3 +261,62 @@ const SalaryPaymentDashboard = () => {
 };
 
 export default SalaryPaymentDashboard;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

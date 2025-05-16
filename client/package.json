@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@heroicons/react": "^2.2.0",
@@ -23,6 +24,7 @@
     "formik": "^2.4.6",
     "framer-motion": "^11.18.2",
     "gsap": "^3.12.7",
+    "jspdf": "^3.0.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.474.0",
     "moment": "^2.30.1",

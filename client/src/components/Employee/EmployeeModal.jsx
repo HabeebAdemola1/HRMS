@@ -243,13 +243,23 @@ const EmployeeModal = ({ show, onClose, formData, setFormData, isEdit, selectedE
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Complaints</label>
-                <textarea
-                  name="complaints"
-                  value={formData.complaints}
-                  onChange={handleInputChange}
-                  className="mt-1 p-2 w-full border rounded focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  rows="4"
-                ></textarea>
+                <select
+            aria-label="Select a complaint type"
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            value={formData.complaints}
+            onChange={handleInputChange}
+         
+          >
+            <option value="">Select a complaint type</option>
+         
+            <option value="sacked">Sacked</option>
+            <option value="dismissed">Dismissed</option>
+            <option value="leave">Leave</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        
+
+              
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Profile Picture</label>
