@@ -407,7 +407,10 @@ router.get('/:id/complaint-letter', verifyToken, async (req, res) => {
       "pay-slip",
       "employment",
       "query",
-      "promotion"
+      "promotion",
+      "suspended", 
+      "sacked",
+       "dismissed",
     ]
 
 
@@ -433,7 +436,7 @@ router.get('/:id/complaint-letter', verifyToken, async (req, res) => {
     switch (complaintType) {
       case 'sacked':
         letter = `
-[Company Letterhead]
+${admin.name}
 Date: ${date}
 
 To: ${employee.name}
@@ -457,7 +460,7 @@ ${admin.name}
         break;
       case 'promotion':
         letter = `
-[Company Letterhead]
+${admin.name}
 Date: ${date}
 
 To: ${employee.name}
@@ -481,7 +484,7 @@ ${admin.name}
         break;
       case 'pay-slip':
         letter = `
-[Company Letterhead]
+${admin.name}
 Date: ${date}
 
 To: ${employee.name}
@@ -503,7 +506,7 @@ ${admin.name}
         break;
       case 'employment':
         letter = `
-[Company Letterhead]
+${admin.name}
 Date: ${date}
 
 To: ${employee.name}
@@ -525,7 +528,7 @@ ${admin.name}
         break;
       case 'query':
         letter = `
-[Company Letterhead]
+${admin.name}
 Date: ${date}
 
 To: ${employee.name}
@@ -547,7 +550,7 @@ ${admin.name}
         break;
       case 'dismissed':
         letter = `
-[Company Letterhead]
+${admin.name}
 Date: ${date}
 
 To: ${employee.name}
@@ -571,7 +574,7 @@ ${admin.name}
         break;
       case 'leave':
         letter = `
-[Company Letterhead]
+${admin.name}
 Date: ${date}
 
 To: ${employee.name}
@@ -593,7 +596,7 @@ ${admin.name}
         break;
       case 'suspended':
         letter = `
-[Company Letterhead]
+${admin.name}
 Date: ${date}
 
 To: ${employee.name}

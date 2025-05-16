@@ -9,6 +9,10 @@ const Complaint = () => {
   const [letter, setLetter] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [editableLetter, setEditableLetter] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedLetter, setEditedLetter] = useState(letter);
+
 
 
 
@@ -87,7 +91,7 @@ useEffect(() => {
         { letter, complaintType },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("failed to send letter to the mail", {
+      toast.success("letter has been successfully sent to the mail", {
         style:{background: "#4cf", color: "black"}
      })
     } catch (err) {
@@ -98,6 +102,43 @@ useEffect(() => {
       setError('Failed to send letter');
     }
   };
+
+  const handleSendWhatsApp = async() => {
+    
+    const employee = employees.find(emp => emp._id === selectedEmployee);
+    if(!employee || !employee.phone){
+      toast.error("employee phone number not available", {
+        style:{background: "white", color: "black"}
+      })
+      return
+    }
+    const message = encodeURIComponent(editableLetter)
+    const whatsappUrl = `https://wa.me/${employee.phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  }
+
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setEditedLetter(letter);
+  };
+
+  const handleSaveEdit = () => {
+  
+    console.log('Saving edited letter:', editedLetter);
+    setLetter(editedLetter)
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedLetter(letter);
+  };
+
+  const handleLetterChange = (e) => {
+    setEditedLetter(e.target.value); 
+  };
+
 
   return (
     <div className=" bg-gray-100 flex items-center justify-center p-4">
@@ -161,9 +202,33 @@ useEffect(() => {
 
         {/* Generated Letter */}
         {letter && (
-          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-md">
-            <h2 className="text-lg font-semibold mb-2">Generated Letter</h2>
-            <pre className="whitespace-pre-wrap text-sm">{letter}</pre>
+      <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-md">
+        <h2 className="text-lg font-semibold mb-2">Generated Letter</h2>
+        {isEditing ? (
+          <div>
+            <textarea
+              className="w-full h-64 p-2 border border-gray-300 rounded-md text-sm"
+              value={editedLetter}
+              onChange={handleLetterChange}
+            />
+            <div className="mt-4 flex space-x-2">
+              <button
+                onClick={handleSaveEdit}
+                className="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition"
+              >
+                Save
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                className="bg-red-600 text-white p-2 rounded-md hover:bg-red-700 transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <pre className="whitespace-pre-wrap text-sm">{editableLetter? editableLetter : letter}</pre>
             <div className="mt-4 flex space-x-2">
               <button
                 onClick={handleDownloadLetter}
@@ -177,19 +242,66 @@ useEffect(() => {
               >
                 Send via Email
               </button>
-
               <button
-                onClick={handleSendEmail}
+                onClick={handleSendWhatsApp}
                 className="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition"
               >
-                Send via whatsapp
+                Send via WhatsApp
+              </button>
+              <button
+                onClick={handleEditClick}
+                className="bg-yellow-600 text-white p-2 rounded-md hover:bg-yellow-700 transition"
+              >
+                Edit Letter
               </button>
             </div>
-          </div>
+          </>
         )}
+      </div>
+    )}
       </div>
     </div>
   );
 };
 
 export default Complaint;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

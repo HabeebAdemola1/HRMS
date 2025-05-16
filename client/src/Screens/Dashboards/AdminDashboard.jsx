@@ -250,7 +250,7 @@ const AdminDashboard = () => {
               )}
             </li>
 
-
+{/* 
 
             
             <li
@@ -271,7 +271,7 @@ const AdminDashboard = () => {
                 <div className="absolute left-0 w-1 h-8 bg-white top-1/2 transform -translate-y-1/2"></div>
               )}
             </li>
-
+ */}
 
                       
             <li
