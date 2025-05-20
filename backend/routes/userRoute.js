@@ -182,8 +182,8 @@ cloudinary.config({
   
   // Login
 router.post('/login', async (req, res) => {
-    const { email, password: rawPassword } = req.body;
-    const password = rawPassword.trim();
+    const { email, password} = req.body;
+  
     try {
       const user = await User.findOne({ email });
       if (!user) return res.status(400).json({ message: 'Invalid email ' });

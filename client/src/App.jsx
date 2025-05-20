@@ -11,8 +11,7 @@ import EmailVerify from "./Screens/auth/VerifyEmail";
 import SuperAdminSignup from "./Screens/auth/SuperAdminSignup";
 import SuperAdminDashboard from "./Screens/superAdmin/SuperAdminDashboard";
 import LoginStaff from "./Screens/auth/LoginStaff";
-import StaffDashboard from "./Screens/Dashboards/StaffDashboard";
-
+import StaffDashboard from "./Screens/employee/StaffDashboard";
 const App = () => {
   return (
     <div>

@@ -14,7 +14,11 @@ const Settings = () => {
 
   const handleToggleDashboardAccess= async() => {
     try {
-      const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/employees/toggle-dashboard`, getAuthHeader())
+      const token = localStorage.getItem("token")
+      const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/employees/toggle-dashboard`, {
+        headers: {Authorization : `Bearer ${token}`}
+      })
+      console.log(token)
       toast.success(response.data.message, {
         style: { background: '#4cf', color: 'black' },
       });

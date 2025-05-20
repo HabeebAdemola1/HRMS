@@ -113,7 +113,7 @@ useEffect(() => {
       return
     }
     const message = encodeURIComponent(editableLetter)
-    const whatsappUrl = `https://wa.me/${employee.phoneNumber}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${employee.phone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   }
 

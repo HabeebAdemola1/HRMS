@@ -11,7 +11,7 @@ import nodemailer from "nodemailer";
 
 import crypto from "crypto"
 import { verifyToken } from '../middleware/verifyToken.js';
-
+import jwt  from "jsonwebtoken"
 import dotenv from "dotenv"
 
 dotenv.config()
@@ -128,7 +128,8 @@ router.delete('/:id', verifyToken, async (req, res) => {
 });
 // Toggle Dashboard Access
 router.patch('/toggle-dashboard', verifyToken, async (req, res) => {
-  const userId = req.user.id
+  console.log("the token", req.user.id)
+  const userId = req.user?.id
   try {
     const user = await User.findOne({_id: userId})
     if(!user){
@@ -195,18 +196,22 @@ router.patch('/:id/work', verifyToken, async (req, res) => {
 });
 
 // Employee Login
-router.post('/employee-login', async (req, res) => {
-  const { uniqueNumber } = req.body;
-  try {
-    const employee = await Employee.findOne({ uniqueNumber });
-    if (!employee) return res.status(400).json({ error: 'Invalid unique number' });
-    if (!employee.dashboardAccess) return res.status(403).json({ error: 'Dashboard access disabled' });
+// router.post('/employee-login', async (req, res) => {
+//   const { uniqueNumber } = req.body;
 
-    res.status(200).json(employee);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+//   console.log('Employee-login: Received uniqueNumber:', uniqueNumber);
+//   try {
+//     const employee = await Employee.findOne({ uniqueNumber });
+//     if (!employee) return res.status(400).json({ message: 'Invalid unique number' });
+//     // if (!employee.dashboardAccess) return res.status(403).json({ message: 'Dashboard access disabled' });
+
+
+//     const token = jwt.sign({id: employee._id, }, process.env.JWT_SECRET, { expiresIn: '1h' })
+//     res.status(200).json({message: `successfully logged in as ${employee.name}`,employee, token});
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 // Add Payment/Payroll
 router.post('/:id/payment', verifyToken, async (req, res) => {
@@ -304,6 +309,284 @@ router.post('/:id/attendance', verifyToken, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+// router.get("/employeedashboard", verifyToken, async(req, res) => {
+// const userId = req.user.id
+//   try {
+//     const employee = await Employee.findOne({_id: userId}).populate("adminId", "name email phoneNumber")
+//     if(!employee){
+//       return res.status(400).json({message: "employee not found"})
+//     }
+//        if (!employee && req.query.uniqueNumber) {
+//       const uniqueNumber = req.query.uniqueNumber.toString().trim();
+//       console.log('employeedashboard: Using uniqueNumber:', uniqueNumber);
+//       employee = await Employee.findOne({ uniqueNumber })
+//         .populate('adminId', 'name email phoneNumber')
+//         .lean();
+//     }
+
+//     return res.status(200).json({employee})
+//   } catch (error) {
+//     console.log(error)
+//     return res.status(500).json({message: "an error occurreed"})
+//   }
+// })
+
+
+// router.get("/employeepayment", verifyToken, async(req, res) => {
+//   const userId = req.user.id
+//   try {
+//      const employee = await Employee.findOne({_id: userId}).populate("adminId", "name email phoneNumber")
+//     if(!employee){
+//       return res.status(400).json({message: "employee not found"})
+//     }
+//        if (!employee && req.query.uniqueNumber) {
+//       const uniqueNumber = req.query.uniqueNumber.toString().trim();
+//       console.log('employeedashboard: Using uniqueNumber:', uniqueNumber);
+//       employee = await Employee.findOne({ uniqueNumber })
+//         .populate('adminId', 'name email phoneNumber')
+//         .lean();
+//     }
+//     const payment = await Payment.findOne({_id: userId}).populate("adminId", "name email phoneNumber")
+//     if(!payment && req.query.uniqueNumber){
+//         const uniqueNumber = req.query.uniqueNumber.toString().trim();
+//       console.log('employeedashboard: Using uniqueNumber:', uniqueNumber);
+//       payment = await Payment.findOne({ uniqueNumber })
+//         .populate('adminId', 'name email phoneNumber')
+//         .lean();
+   
+//     }
+
+//     return res.status(200).json({payment})
+//   } catch (error) {
+//     console.log(error)
+//     return res.status(500).json({message: "an error occurred from the server"})
+//   }
+// })
+
+
+
+
+
+// Employee dashboard route
+router.get('/employeedashboard', verifyToken, async (req, res) => {
+  try {
+    console.log('employeedashboard: Query params:', req.query);
+    if (req.user.role !== 'employee') {
+      console.log('employeedashboard: Access denied for non-employee role:', req.user.role);
+      return res.status(403).json({ message: 'Forbidden: Employee access required' });
+    }
+
+    let employee = await Employee.findById(req.user.id)
+      .populate('adminId', 'name email phoneNumber')
+      .lean();
+
+    if (!employee) {
+      const uniqueNumber = req.query.uniqueNumber || req.user.uniqueNumber;
+      if (uniqueNumber) {
+        console.log('employeedashboard: Using uniqueNumber:', uniqueNumber);
+        employee = await Employee.findOne({ uniqueNumber })
+          .populate('adminId', 'name email phoneNumber')
+          .lean();
+      }
+    }
+
+    if (!employee) {
+      console.log('employeedashboard: Employee not found for ID:', req.user.id, 'or uniqueNumber:', req.query.uniqueNumber || req.user.uniqueNumber);
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    console.log('employeedashboard: Found employee:', employee);
+    return res.status(200).json({ employee });
+  } catch (error) {
+    console.error('employeedashboard: Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
+    return res.status(500).json({ message: 'An error occurred' });
+  }
+});
+
+// Employee payment route
+router.get('/employeepayment', verifyToken, async (req, res) => {
+  try {
+    console.log('employeepayment: Query params:', req.query);
+    if (req.user.role !== 'employee') {
+      console.log('employeepayment: Access denied for non-employee role:', req.user.role);
+      return res.status(403).json({ message: 'Forbidden: Employee access required' });
+    }
+
+    const employee = await Employee.findById(req.user.id).select('_id uniqueNumber').lean();
+    if (!employee) {
+      console.log('employeepayment: Employee not found for ID:', req.user.id);
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    const payments = await Payment.find({ employeeId: req.user.id })
+      .sort({ paymentDate: -1 })
+      .lean();
+
+    console.log('employeepayment: Found payments:', payments.length, 'for employee:', employee.uniqueNumber);
+    return res.status(200).json({ payment: payments });
+  } catch (error) {
+    console.error('employeepayment: Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
+    return res.status(500).json({ message: 'An error occurred' });
+  }
+});
+
+
+router.post("/applyforleave", verifyToken, async(req, res) => {
+  const {letter} = req.body
+  try {
+     console.log('employeepayment: Query params:', req.query);
+    if (req.user.role !== 'employee') {
+      console.log('employeepayment: Access denied for non-employee role:', req.user.role);
+      return res.status(403).json({ message: 'Forbidden: Employee access required' });
+    }
+
+    
+    const employee = await Employee.findById(req.user.id).select('_id uniqueNumber').lean();
+    if (!employee) {
+      console.log('employeepayment: Employee not found for ID:', req.user.id);
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    const leave = new Leave({
+      adminId: employee.adminId,
+      employeeName:employee.name,
+      letter,
+
+    })
+
+    
+    return res.status(201).json({message: "successful created",leave})
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({message: "an error occcured"})
+  }
+})
+
+router.get("/getleaveletter", verifyToken, async (req, res) => {
+  try {
+    console.log('getleaveletter: Starting for user:', req.user.id);
+
+    // Fetch employee
+    const employee = await Employee.findById(req.user.id).lean();
+    if (!employee) {
+      console.log('getleaveletter: Employee not found for ID:', req.user.id);
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+    console.log('getleaveletter: Employee found:', employee.name);
+
+    // Fetch admin
+    const admin = await User.findById(employee.adminId).lean();
+    if (!admin) {
+      console.log('getleaveletter: Admin not found for ID:', employee.adminId);
+      return res.status(400).json({ message: 'Admin data not found' });
+    }
+    console.log('getleaveletter: Admin found:', admin.name);
+
+    // Hardcoded leave data (replace with LeaveRequest query in dynamic version)
+    const leaveData = {
+      type: 'leave',
+      submissionDate: new Date('2025-05-10'),
+      startDate: new Date('2025-06-01'),
+      endDate: new Date('2025-06-05'),
+      status: 'approved',
+      rejectionReason: '',
+      hrContact: 'hr@example.com',
+    };
+
+    // Generate current date
+    const currentDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    // Generate letter
+    let letter = '';
+    if (leaveData.type === 'leave') {
+      letter = `
+${admin.name}
+Date: ${currentDate}
+
+To: ${employee.name}
+Address: ${employee.address || 'Not provided'}
+
+Subject: Appeal for a Leave
+
+Dear ${employee.name},
+
+We have reviewed your leave request submitted on ${leaveData.submissionDate.toLocaleDateString('en-US')}. 
+We are pleased to inform you that your leave from ${leaveData.startDate.toLocaleDateString('en-US')} to ${leaveData.endDate.toLocaleDateString('en-US')} has been ${leaveData.status}.
+${leaveData.status === 'rejected' ? `Reason: ${leaveData.rejectionReason}` : ''}
+
+Please ensure all pending tasks are delegated before your leave begins. For any questions, contact HR at ${leaveData.hrContact}.
+
+Sincerely,
+${admin.name}
+HR Manager
+${admin.name}
+      `;
+    } else {
+      console.log('getleaveletter: Invalid leave type:', leaveData.type);
+      return res.status(400).json({ message: 'Invalid leave type' });
+    }
+
+    console.log('getleaveletter: Generated letter:\n', letter);
+    res.status(200).json({ letter });
+  } catch (error) {
+    console.error('getleaveletter: Error:', {
+      message: error.message,
+      stack: error.stack,
+    });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+
+// Employee login (for completeness)
+router.post('/employee-login', async (req, res) => {
+  let { uniqueNumber } = req.body;
+  uniqueNumber = uniqueNumber?.toString().trim();
+  if (!uniqueNumber) {
+    return res.status(400).json({ message: 'uniqueNumber is required' });
+  }
+
+  try {
+    const employee = await Employee.findOne({ 
+      uniqueNumber: { $regex: `^${uniqueNumber}$`, $options: 'i' }
+    });
+    if (!employee) {
+      return res.status(400).json({ message: 'Invalid unique number' });
+    }
+ 
+
+    const token = jwt.sign({ id: employee._id, role: 'employee' }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    res.status(200).json({ 
+      message: `Successfully logged in as ${employee.name}`, 
+      employee, 
+      token 
+    });
+  } catch (error) {
+    console.error('employee-login: Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
 
 
 

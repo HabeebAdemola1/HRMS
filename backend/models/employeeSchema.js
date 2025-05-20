@@ -16,6 +16,7 @@ const EmployeeSchema = new mongoose.Schema({
   AcctNo:{type:String, },
   Bank:{type:String, },
   AcctName: {type:String, },
+  role:{type:String, default: "employee"},
   address:{type:String, required: true},
   gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
   complaints:{type:String, enum: ["suspended", "sacked", "dismissed", "serviceNoLongerRequired","pay-slip", "employment","query","promotion", "none"], default:"none" },

@@ -20,13 +20,15 @@ const LoginStaff = () => {
     setError(null);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`,  uniqueNumber 
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/employees/employee-login`,  {uniqueNumber }
       
       );
 
       if (response.data) {
         localStorage.setItem("token", response.data.token);
-        const role = response.data.role;
+        console.log(response.data.token)
+        localStorage.setItem("uniqueNumber", response.data.employee.uniqueNumber)
+      
      
         const message = response.data?.message
        

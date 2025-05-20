@@ -251,7 +251,7 @@ const EmployeeModal = ({ show, onClose, formData, setFormData, isEdit, selectedE
          
           >
             <option value="">Select a complaint type</option>
-         
+           <option value="none">none</option>
             <option value="sacked">Sacked</option>
             <option value="dismissed">Dismissed</option>
             <option value="leave">Leave</option>
