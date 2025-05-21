@@ -27,6 +27,7 @@ const Login = () => {
 
       if (response.data) {
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("email", response.data.email)
         const role = response.data.role;
      
         const message = response.data?.message

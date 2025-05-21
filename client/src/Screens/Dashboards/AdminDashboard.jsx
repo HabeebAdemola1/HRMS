@@ -1,5 +1,5 @@
 import  { useEffect, useState } from 'react';
-import { FaUser, FaComments, FaCog, FaBars, FaTimes, FaMoneyCheckAlt, FaUserTag, FaBuilding, FaDollarSign, FaPaypal, FaAviato, FaPersonBooth, FaPeopleCarry, FaCompressAlt, } from 'react-icons/fa';
+import { FaUser, FaComments, FaCog, FaBars, FaTimes, FaMoneyCheckAlt, FaUserTag, FaBuilding, FaDollarSign, FaPaypal, FaAviato, FaPersonBooth, FaPeopleCarry, FaCompressAlt, FaAccessibleIcon, } from 'react-icons/fa';
 
 import DashboardContent from './DashboardContent';
 import { FaJoget } from 'react-icons/fa';
@@ -14,6 +14,8 @@ import PaymentManagement from '../../components/payment/Payment';
 import AttendanceManagement from '../../components/payment/Attendance';
 import { WorkSchedule } from '../../../../backend/models/paymentSchema';
 import Complaint from '../../components/Employee/Complaint';
+import PostJobs from '../others/PostJobs';
+import SeeMyJobsDetails from '../others/SeeMyJobsDetails';
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -95,6 +97,10 @@ const AdminDashboard = () => {
           return <SalaryPaymentDashboard />
       case 'complaints':
             return <Complaint />
+      case 'postJobs':
+            return <PostJobs />
+      case 'seeJobs':
+            return <SeeMyJobsDetails />
 
       default:
         return <DashboardContent />;
@@ -310,6 +316,45 @@ const AdminDashboard = () => {
                 settings
               </span>
               {activeTab === 'settings' && (
+                <div className="absolute left-0 w-1 h-8 bg-white top-1/2 transform -translate-y-1/2"></div>
+              )}
+            </li>
+
+
+                <li
+              className="group relative"
+              onClick={() => {
+                setActiveTab('postJobs');
+                setIsSidebarOpen(false);
+              }}
+            >
+             
+              <div className="px-4 py-3 flex items-center justify-center cursor-pointer hover:bg-blue-700">
+                <FaJoget className="text-xl" />
+              </div>
+              <span className="absolute left-full ml-2 w-0 overflow-hidden group-hover:w-32 bg-blue-700 text-white px-2 py-1 rounded-r transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100">
+                Post jobs
+              </span>
+              {activeTab === 'seeJobs' && (
+                <div className="absolute left-0 w-1 h-8 bg-white top-1/2 transform -translate-y-1/2"></div>
+              )}
+            </li>
+
+                    <li
+              className="group relative"
+              onClick={() => {
+                setActiveTab('seeJobs');
+                setIsSidebarOpen(false);
+              }}
+            >
+             
+              <div className="px-4 py-3 flex items-center justify-center cursor-pointer hover:bg-blue-700">
+                <FaAccessibleIcon className="text-xl" />
+              </div>
+              <span className="absolute left-full ml-2 w-0 overflow-hidden group-hover:w-32 bg-blue-700 text-white px-2 py-1 rounded-r transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100">
+                see jobs
+              </span>
+              {activeTab === 'seeJobs' && (
                 <div className="absolute left-0 w-1 h-8 bg-white top-1/2 transform -translate-y-1/2"></div>
               )}
             </li>

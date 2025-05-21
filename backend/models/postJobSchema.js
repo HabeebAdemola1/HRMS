@@ -4,14 +4,19 @@ const jobSchema = new mongoose.Schema({
     employerId:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: true
     },
     jobseekerId:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
-     companyAbout:{
+     companyName:{
         type:String,
         required:true
+     },
+     companyAbout:{
+        type:String,
+      
      },
     jobTitle:{
         type:String,
@@ -53,4 +58,4 @@ const jobSchema = new mongoose.Schema({
         },
 }, {Timestamps:true})
 
-export default mongoose.model("job", jobSchema)
+export default mongoose.model("Job", jobSchema)
