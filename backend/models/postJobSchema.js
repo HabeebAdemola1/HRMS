@@ -38,6 +38,11 @@ const jobSchema = new mongoose.Schema({
         type:String,
         required:String
     },
+      qualification:{
+        type:String,
+        required:String
+    },
+  
     duties:{
         type:String,
         required:true
@@ -45,6 +50,10 @@ const jobSchema = new mongoose.Schema({
     vacancies:{
         type:String,
         required: true
+    },
+    shortlisted:{
+        type:Boolean,
+        dwfault:false
     },
     experience: {
          type: Number, 

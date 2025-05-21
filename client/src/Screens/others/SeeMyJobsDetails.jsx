@@ -20,6 +20,13 @@ const SeeMyJobsDetails = () => {
   const [myJobs, setMyJobs] = useState([]);
   const [jobSeekers, setJobSeekers] = useState([]);
   const [error, setError] = useState('');
+  const [modal, setModal] = useState(false);
+  // New state for modals and shortlist
+  const [viewModal, setViewModal] = useState(false);
+  const [shortlistModal, setShortlistModal] = useState(false);
+  const [selectedSeeker, setSelectedSeeker] = useState(null);
+  const [shortlistMessage, setShortlistMessage] = useState('');
+  const [shortlistLoading, setShortlistLoading] = useState(false);
 
   // Fetch jobs and job seekers
   useEffect(() => {
@@ -84,7 +91,7 @@ const SeeMyJobsDetails = () => {
   const totalApplicants = jobSeekers.length;
   const matchingQualifications = jobSeekers.filter((seeker) => {
     const job = myJobs.find((job) => job._id === seeker.jobId);
-    return job && seeker.qualification === job.qualification;
+    return job && seeker.YOE === job.experience || seeker?.qualification === job?.qualification;
   }).length;
 
   // Chart data for jobs posted
@@ -143,6 +150,67 @@ const SeeMyJobsDetails = () => {
         ticks: { stepSize: 1 },
       },
     },
+  };
+
+  // Handle View button click
+  const handleViewClick = (seeker) => {
+    setSelectedSeeker(seeker);
+    setViewModal(true);
+  };
+
+  // Handle Shortlist button click
+  const handleShortlistClick = (seeker) => {
+    setSelectedSeeker(seeker);
+    setShortlistMessage(
+      `Dear ${seeker.firstName} ${seeker.lastName},\n\nCongratulations! You have been shortlisted for an interview for the position of ${
+        seeker.jobId.jobTitle || 'N/A'
+      }. Please prepare for the next steps, and we will contact you soon with further details.\n\nBest regards,${seeker.employerId?.name}`
+    );
+    setShortlistModal(true);
+  };
+
+  // Handle Shortlist submission
+  const handleShortlistSubmit = async () => {
+    if (!selectedSeeker) return;
+
+    try {
+      setShortlistLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Authentication token is missing');
+        return;
+      }
+      console.log ('job id', selectedSeeker?.jobId._id,)
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/job/shortlist`,
+        {
+          jobSeekerId: selectedSeeker._id,
+          jobId: selectedSeeker?.jobId._id,
+          email: selectedSeeker.email,
+          message: shortlistMessage,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+     
+
+      // Update jobSeekers state to mark as shortlisted
+      setJobSeekers((prev) =>
+        prev.map((seeker) =>
+          seeker._id === selectedSeeker._id ? { ...seeker, shortlisted: true } : seeker
+        )
+      );
+      setShortlistModal(false);
+      setSelectedSeeker(null);
+      setShortlistMessage('');
+      toast.success('Job seeker shortlisted and email sent successfully!');
+    } catch (error) {
+      console.error('Error shortlisting job seeker:', error);
+      toast.error(error?.response?.data?.message || 'Failed to shortlist job seeker');
+    } finally {
+      setShortlistLoading(false);
+    }
   };
 
   return (
@@ -222,8 +290,14 @@ const SeeMyJobsDetails = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qualification</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Applied</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Applied For</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Years of Exp</th>
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">course studied</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">phone No</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th> */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matches Qualification</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -235,7 +309,12 @@ const SeeMyJobsDetails = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{`${seeker.firstName} ${seeker.lastName}`}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{seeker.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{seeker.qualification}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{job ? job.title : 'Unknown Job'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-900 font-bold">{seeker.jobId?.jobTitle || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{seeker.YOE}</td>
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{seeker.course}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{seeker.phone}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{seeker.address}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{seeker.grade}</td> */}
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -245,6 +324,27 @@ const SeeMyJobsDetails = () => {
                           {matchesQualification ? 'Yes' : 'No'}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <div className="space-x-3">
+                          <button
+                            onClick={() => handleViewClick(seeker)}
+                            className="bg-blue-400 text-white p-2 rounded-md hover:bg-blue-500"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => handleShortlistClick(seeker)}
+                            className={`p-2 rounded-md text-white ${
+                              seeker.shortlisted
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-400 hover:bg-green-500'
+                            }`}
+                            disabled={seeker.shortlisted}
+                          >
+                            {seeker.shortlisted ? 'Shortlisted' : 'Shortlist'}
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -253,6 +353,104 @@ const SeeMyJobsDetails = () => {
           </div>
         )}
       </div>
+
+      {/* View Modal */}
+      {viewModal && selectedSeeker && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Job Seeker Details</h2>
+            <div className="space-y-2">
+              <p><strong>Name:</strong> {selectedSeeker.firstName} {selectedSeeker.lastName}</p>
+              <p><strong>Email:</strong> {selectedSeeker.email}</p>
+              <p><strong>Qualification:</strong> {selectedSeeker.qualification}</p>
+              <p><strong>Job Applied For:</strong>{selectedSeeker.jobId?.jobTitle}</p>
+              <p><strong>Salary for Job Applied For:</strong>{selectedSeeker.jobId?.salary}</p>
+              <p><strong>Requirments for Job Applied For:</strong>{selectedSeeker.jobId?.requirements}</p>
+              <p><strong>Years of Experience:</strong> {selectedSeeker.YOE}</p>
+              <p><strong>Course Studied:</strong> {selectedSeeker.course || 'N/A'}</p>
+              <p><strong>Phone Number:</strong> {selectedSeeker.phone || 'N/A'}</p>
+              <p><strong>Address:</strong> {selectedSeeker.address || 'N/A'}</p>
+              <p><strong>Grade:</strong> {selectedSeeker.grade || 'N/A'}</p>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => {
+                  setViewModal(false);
+                  setSelectedSeeker(null);
+                }}
+                className="bg-gray-400 text-white p-2 rounded-md hover:bg-gray-500"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shortlist Modal */}
+      {shortlistModal && selectedSeeker && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Shortlist Job Seeker</h2>
+            <p className="mb-4 text-gray-600">
+              Compose a message to shortlist {selectedSeeker.firstName} {selectedSeeker.lastName} for{' '}
+              {selectedSeeker.jobId?.jobTitle}
+            </p>
+            <textarea
+              className="w-full h-40 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+              value={shortlistMessage}
+              onChange={(e) => setShortlistMessage(e.target.value)}
+              placeholder="Enter shortlist message..."
+            />
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShortlistModal(false);
+                  setSelectedSeeker(null);
+                  setShortlistMessage('');
+                }}
+                className="bg-gray-400 text-white p-2 rounded-md hover:bg-gray-500"
+                disabled={shortlistLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleShortlistSubmit}
+                className="bg-green-400 text-white p-2 rounded-md hover:bg-green-500 flex items-center"
+                disabled={shortlistLoading}
+              >
+                {shortlistLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5 mr-2 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                      ></path>
+                    </svg>
+                    Sending...
+                  </>
+                ) : (
+                  'Submit'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

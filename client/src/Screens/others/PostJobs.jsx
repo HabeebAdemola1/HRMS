@@ -11,6 +11,7 @@ const PostJobs = () => {
       companyAbout: "",
       jobTitle: "",
       jobType: "",
+      qualification:"",
       location: "",
       salary: "",
       requirements: "",
@@ -58,6 +59,7 @@ const PostJobs = () => {
           jobTitle: "",
           jobType: "",
           location: "",
+          qualification:"",
           salary: "",
           requirements: "",
           duties: "",
@@ -164,6 +166,17 @@ const PostJobs = () => {
             type="text"
             name="salary"
             value={formData.salary}
+            onChange={handleInputChange}
+            required
+           className="w-full p-2 mt-2 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-200"
+          />
+        </div>
+        <div style={{ marginBottom: "10px" }}>
+          <label>Qualification:</label>
+          <input
+            type="text"
+            name="qualification"
+            value={formData.qualification}
             onChange={handleInputChange}
             required
            className="w-full p-2 mt-2 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-200"

@@ -4,6 +4,11 @@ import User from "../models/userSchema.js"
 import express from "express"
 import {verifyToken} from "../middleware/verifyToken.js"
 import ApplyJob from "../models/applyforJobSchema.js"
+import nodemailer from "nodemailer"
+import dotenv from "dotenv"
+
+
+dotenv.config()
 const jobRouters = express.Router()
 
 
@@ -14,6 +19,7 @@ jobRouters.post("/postjob", verifyToken, async(req, res) => {
         jobTitle,
         jobType,
         location,
+        qualification,
         salary,
         requirements,
         duties,
@@ -30,6 +36,7 @@ jobRouters.post("/postjob", verifyToken, async(req, res) => {
             companyAbout,
             jobTitle,
             jobType,
+            qualification,
             location,
             salary,
             requirements,
@@ -134,7 +141,10 @@ jobRouters.get("/candidateapplyforJob", verifyToken, async(req, res) => {
             })
           }
         
-          const jobSeekers = await ApplyJob.find({employerId}).populate("jobId", "jobTitle jobType location salary requirements duties  vacancies")
+          const jobSeekers = await ApplyJob.find({employerId})
+                .populate("jobId", "jobTitle jobType location salary requirements duties  vacancies")
+                .populate("employerId", "name email phone")
+
            if(!jobSeekers){
             return res.status(404).json({
                 message: "employer is not found"
@@ -153,6 +163,48 @@ jobRouters.get("/candidateapplyforJob", verifyToken, async(req, res) => {
         })
     }
 })
+
+
+
+jobRouters.post('/shortlist', async (req, res) => {
+  const { jobSeekerId, jobId, email, message } = req.body;
+
+  try {
+    // Verify job seeker and job
+    const jobSeeker = await ApplyJob.findById(jobSeekerId);
+    if (!jobSeeker) {
+      return res.status(404).json({ message: 'Job seeker not found' });
+    }
+    if (jobSeeker.jobId.toString() !== jobId) {
+      return res.status(400).json({ message: 'Invalid job ID' });
+    }
+
+    // Mark as shortlisted
+    jobSeeker.shortlisted = true;
+    await jobSeeker.save();
+
+    // Send email
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', 
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Shortlist Notification for Job Application',
+      text: message,
+    });
+
+    res.status(200).json({ message: 'Shortlisted and email sent' });
+  } catch (error) {
+    console.error('Error shortlisting:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 

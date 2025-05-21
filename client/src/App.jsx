@@ -12,6 +12,7 @@ import SuperAdminSignup from "./Screens/auth/SuperAdminSignup";
 import SuperAdminDashboard from "./Screens/superAdmin/SuperAdminDashboard";
 import LoginStaff from "./Screens/auth/LoginStaff";
 import StaffDashboard from "./Screens/employee/StaffDashboard";
+import AllJobs from "./Screens/AllJobs";
 const App = () => {
   return (
     <div>
@@ -39,6 +40,7 @@ const App = () => {
           <Route path="/superadmindashboard" element={<SuperAdminDashboard /> } />
           <Route path="/stafflogin" element={<LoginStaff />} />
           <Route path="/staffdashboard" element={<StaffDashboard />} />
+          <Route path="/alljobs" element={<AllJobs />} />
 
          
         

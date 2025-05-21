@@ -198,7 +198,7 @@ router.post('/login', async (req, res) => {
       console.log("Password Match:", isMatch);
       if (!isMatch) return res.status(400).json({ message: 'incorrect password' });
    
-      const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
       let roleMessage = "";
       switch (user.role) {
